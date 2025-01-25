@@ -23,7 +23,7 @@
      useEffect(() => {
       const fetchPlaylistData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3003/api/playlist/1313621735`); // Specify the full URL with port 3003
+          const response = await axios.get(`${process.env.SERVER}/api/playlist/1313621735`); // Specify the full URL with port 3003
           console.log("data:", JSON.stringify(response.data));
 
           let responseData = response.data.tracks.data.filter(track => track.preview.length > 0).map((track, index) => ({
