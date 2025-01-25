@@ -4,7 +4,7 @@ import axios from 'axios';
 
 function App() {
   const [audio] = useState(new Audio());
-  const [audioUrls, setAudioUrls] = useState([]);
+  const [tracks, setTracks] = useState([]);
 
   const playAudio = (url) => {
     if (url) {
@@ -28,7 +28,7 @@ function App() {
 
         let responseData = response.data.tracks.data
           .filter(track => track.preview.length > 0)
-          .slice(0, 3) // Get only the top 3 tracks
+          .slice(0, 50) // Get only the top 10 tracks
           .map((track, index) => ({
             key: index,
             id: track.id,
@@ -40,8 +40,8 @@ function App() {
 
         console.log("responseData:", responseData);
 
-        // Set the audio URLs of the top 3 tracks
-        setAudioUrls(responseData.map(track => track.audio));
+        // Set the tracks with audio, title, and artist
+        setTracks(responseData);
       } catch (error) {
         console.error("Error fetching playlist data: ", error);
       }
@@ -53,10 +53,12 @@ function App() {
   return (
     <div className="App">
       <h1>Deezer Audio Proxy</h1>
-      {audioUrls.map((url, index) => (
+      {tracks.map((track, index) => (
         <div key={index}>
-          <p>Audio URL: {url}</p>
-          <button onClick={() => playAudio(url)}>Play Audio {index + 1}</button>
+          <p>Audio URL: {track.audio}</p>
+          <p>Title: {track.title}</p>
+          <p>Artist: {track.artist}</p>
+          <button onClick={() => playAudio(track.audio)}>Play Audio {index + 1}</button>
         </div>
       ))}
       <button onClick={stopAudio}>Stop Audio</button>
