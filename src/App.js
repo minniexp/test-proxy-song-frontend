@@ -1,32 +1,35 @@
-   // src/App.js
-   import React, { useState, useEffect } from 'react';
-   import axios from 'axios';
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-   function App() {
-     const [audio] = useState(new Audio());
-     const [audioUrl, setAudioUrl] = useState('');
+function App() {
+  const [audio] = useState(new Audio());
+  const [audioUrls, setAudioUrls] = useState([]);
 
-     const playAudio = () => {
-       if (audioUrl) {
-         audio.src = audioUrl;
-         audio.play().catch((error) => console.error('Error playing audio:', error));
-       } else {
-         console.log('No audio URL available');
-       }
-     };
-     
-     const stopAudio = () => {
-       audio.pause();
-       audio.currentTime = 0; // Reset the audio to the beginning
-     };
+  const playAudio = (url) => {
+    if (url) {
+      audio.src = url;
+      audio.play().catch((error) => console.error('Error playing audio:', error));
+    } else {
+      console.log('No audio URL available');
+    }
+  };
 
-     useEffect(() => {
-      const fetchPlaylistData = async () => {
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_SERVER}/api/playlist/1313621735`); // Specify the full URL with port 3003
-          console.log("data:", JSON.stringify(response.data));
+  const stopAudio = () => {
+    audio.pause();
+    audio.currentTime = 0; // Reset the audio to the beginning
+  };
 
-          let responseData = response.data.tracks.data.filter(track => track.preview.length > 0).map((track, index) => ({
+  useEffect(() => {
+    const fetchPlaylistData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER}/api/playlist/1313621735`);
+        console.log("data:", JSON.stringify(response.data));
+
+        let responseData = response.data.tracks.data
+          .filter(track => track.preview.length > 0)
+          .slice(0, 3) // Get only the top 3 tracks
+          .map((track, index) => ({
             key: index,
             id: track.id,
             audio: track.preview,
@@ -35,26 +38,30 @@
             image: track.album.cover
           }));
 
-          console.log("responseData:", responseData);
+        console.log("responseData:", responseData);
 
-          // Set the audio URL of the first track
-          if (responseData.length > 0) {
-            setAudioUrl(responseData[0].audio);
-          }
-        } catch (error) {
-          console.error("Error fetching playlist data: ", error);
-        }
-      };
-    
-      fetchPlaylistData();
-    }, []);
-     return (
-       <div className="App">
-         <h1>Deezer Audio Proxy</h1>
-         <button onClick={playAudio}>Play Audio</button>
-         <button onClick={stopAudio}>Stop Audio</button>
-       </div>
-     );
-   }
+        // Set the audio URLs of the top 3 tracks
+        setAudioUrls(responseData.map(track => track.audio));
+      } catch (error) {
+        console.error("Error fetching playlist data: ", error);
+      }
+    };
 
-   export default App;
+    fetchPlaylistData();
+  }, []);
+
+  return (
+    <div className="App">
+      <h1>Deezer Audio Proxy</h1>
+      {audioUrls.map((url, index) => (
+        <div key={index}>
+          <p>Audio URL: {url}</p>
+          <button onClick={() => playAudio(url)}>Play Audio {index + 1}</button>
+        </div>
+      ))}
+      <button onClick={stopAudio}>Stop Audio</button>
+    </div>
+  );
+}
+
+export default App;
